@@ -5,8 +5,7 @@ import glob
 import shutil
 
 
-raw_data_dir='raw_data'
-processed_data_dic = 'processed_data'
+
 
 mean_value={'HR':80,'O2Sat':90, 'Temp':36.7, 'SBP':120, 'MAP':90, 'DBP':80, 'Resp':18, 'EtCO2':38, 'BaseExcess':0.0,
        'HCO3':25, 'FiO2':35, 'pH':7.40, 'PaCO2':85, 'SaO2':97, 'AST':20, 'BUN':15, 'Alkalinephos':65,
@@ -15,8 +14,8 @@ mean_value={'HR':80,'O2Sat':90, 'Temp':36.7, 'SBP':120, 'MAP':90, 'DBP':80, 'Res
        'TroponinI':0, 'Hct':40, 'Hgb':14, 'PTT':15, 'WBC':6, 'Fibrinogen':300, 'Platelets':200}
 
 
-def check_type():
-    os.makedirs(processed_data_dic, exist_ok=True)
+def check_type(raw_data_dir,processed_data_dir):
+    os.makedirs(processed_data_dir, exist_ok=True)
     paths = glob.glob(raw_data_dir + '/*')
     columns_name = ['FileName', 'TypeSepsis', 'Sex', 'Age', 'Length', 'LenTime']
     list_rows = []
@@ -37,49 +36,51 @@ def check_type():
             list_rows.append(row)
         print('[***]'+str(path)+' done.')
     save_file = pd.DataFrame(list_rows, columns=columns_name).sort_values(by=['FileName'], ascending=True)
-    path_save = processed_data_dic+'/file_info.csv'
+    path_save = processed_data_dir+'/file_info.csv'
     with open(path_save, 'w') as f:
         save_file.to_csv(f, encoding='utf-8', header=True, index=False)
-    print('[*******] Complete check type.')
+    print('[***] Complete check type.')
 
 
-def convert_to_csv():
-    os.makedirs(processed_data_dic,exist_ok=True)
+def convert_to_csv(raw_data_dir,processed_data_dir):
+    os.makedirs(processed_data_dir,exist_ok=True)
     paths = glob.glob(raw_data_dir + '/*')
     for path in paths:
         file_name = path.split('/')[-1].split('.')[0]+'.csv'
         df = pd.read_csv(path, delimiter='|')
-        path_save = processed_data_dic + '/' + file_name
+        path_save = processed_data_dir + '/' + file_name
         with open(path_save, 'w') as f:
             df[df.columns[:-7]].to_csv(f, encoding='utf-8', header=True, index=False)
         print('[***]' + str(path_save) + ' save.')
     if (os.path.exists(raw_data_dir)):
         shutil.rmtree(raw_data_dir)
-    print('[*******] Complete convert process.')
+    print('[***] Complete convert process.')
 
 
-def process_missing_data(interpolation=True):
-    os.makedirs(processed_data_dic, exist_ok=True)
-    paths = glob.glob(processed_data_dic + '/*')
+def process_missing_data(processed_data_dir,interpolation=True):
+    os.makedirs(processed_data_dir, exist_ok=True)
+    paths = glob.glob(processed_data_dir + '/*')
     for file in paths:
         df=pd.read_csv(file)
         if interpolation==True:
             df = df.interpolate(method='linear').ffill().bfill()
         df = df.ffill().bfill()
         for c in df.columns:
+
             if (df[c].isnull().all()):
                 df[c] =mean_value[c]
 
         df.to_csv(file, encoding='utf-8', header=True, index=False)
         print('[***]' + str(file) + ' interpolate done.')
+    print('[***] Complete missing data interpolate.')
 
 
-def concatenate():
-    set_infor_file=processed_data_dic+'/file_info.csv'
+def concatenate(processed_data_dir):
+    set_infor_file=processed_data_dir+'/file_info.csv'
     list_files = pd.read_csv(set_infor_file)
     num_file = list_files.shape[0]
     for i in range(num_file):
-        file = os.path.join(processed_data_dic, list_files.iloc[i]['FileName'])
+        file = os.path.join(processed_data_dir, list_files.iloc[i]['FileName'])
         df = pd.read_csv(file, delimiter='|')
         if i == 0:
             frames = df
@@ -89,13 +90,13 @@ def concatenate():
         os.remove(file)
         print('[***]' + str(file) + ' done.')
     os.remove(set_infor_file)
-    path_save = processed_data_dic+'/summary_data.csv'
+    path_save = processed_data_dir+'/summary_data.csv'
     with open(path_save, 'w') as f:
         frames.to_csv(f, encoding='utf-8', header=True, index=False)
     print('[*******] Complete summary process.')
 
-def statistical():
-    file_sum = processed_data_dic+'/summary_data.csv'
+def statistical(processed_data_dir):
+    file_sum = processed_data_dir+'/summary_data.csv'
     df = pd.read_csv(file_sum)
     name_columns = list(df)
     len = len(name_columns)
@@ -114,9 +115,13 @@ def statistical():
         img1.savefig('visualize/' + str(name_columns[i]) + '.png')
         # img2.savefig('./visualize/' + str(name_columns[i]) + '_sepsis.png')
 
-def main():
-    #check_type()
-    convert_to_csv()
-    process_missing_data()
+def data_process(raw_data_dir,processed_data_dir):
+    check_type(raw_data_dir,processed_data_dir)
+    convert_to_csv(raw_data_dir,processed_data_dir)
+    process_missing_data(processed_data_dir)
 
-main()
+if __name__ == "__main__":
+
+    raw_data_dir = 'training/training_setB'
+    processed_data_dir = 'processed_data/training_setB'
+    data_process(raw_data_dir,processed_data_dir)
