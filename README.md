@@ -14,7 +14,7 @@ Chenxi Sun, Shenda Hong, Moxian Song, and Hongyan Li.
 2. Case   
   Data use: Sepsis data. Out it in sepsis_data folder.              
 
-  Download link:    https://www.physionet.org/content/challenge-2019/1.0.0/training_setA.zip
+  Download link:    https://www.physionet.org/content/challenge-2019/1.0.0
 
 3. Demo code: run_example.ipynb (data process, model test, results representation and new model training)       
 
