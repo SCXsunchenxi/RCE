@@ -12,7 +12,7 @@ Chenxi Sun, Shenda Hong, Moxian Song, and Hongyan Li.
     tensorflow==1.13        
 
 2. Case   
-  Data use: Sepsis data. Out it in sepsis_data folder.              
+  Data use: Sepsis data. See it in sepsis_data folder.              
 
   Download link:    https://www.physionet.org/content/challenge-2019/1.0.0
 
